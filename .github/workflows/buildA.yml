@@ -29,7 +29,7 @@ name: buildA
         type: string
         default: '3.38.x'
 
-vars:
+env:
   PROJECT_DIR: source
 
 jobs:
@@ -50,27 +50,27 @@ jobs:
 
       - name: Core pub get
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_core
+          cd ${{ env.PROJECT_DIR }}/simple_live_core
           flutter pub get
 
       - name: Analyze core
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_core
+          cd ${{ env.PROJECT_DIR }}/simple_live_core
           dart analyze --fatal-infos
 
       - name: App pub get
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter pub get
 
       - name: Analyze app
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           dart analyze --fatal-infos
 
       - name: Run tests
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter test --coverage 2>/dev/null || true
 
       - name: Upload coverage
@@ -100,10 +100,10 @@ jobs:
 
       - name: Create key.properties
         run: |
-          echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > ${{ vars.PROJECT_DIR }}/simple_live_app/android/key.properties
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> ${{ vars.PROJECT_DIR }}/simple_live_app/android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> ${{ vars.PROJECT_DIR }}/simple_live_app/android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> ${{ vars.PROJECT_DIR }}/simple_live_app/android/key.properties
+          echo "storeFile=${{ steps.android_keystore.outputs.filePath }}" > ${{ env.PROJECT_DIR }}/simple_live_app/android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> ${{ env.PROJECT_DIR }}/simple_live_app/android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> ${{ env.PROJECT_DIR }}/simple_live_app/android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> ${{ env.PROJECT_DIR }}/simple_live_app/android/key.properties
 
       - uses: actions/setup-java@v4
         with:
@@ -118,11 +118,11 @@ jobs:
           cache: true
 
       - name: Flutter pub get
-        run: cd ${{ vars.PROJECT_DIR }}/simple_live_app && flutter pub get
+        run: cd ${{ env.PROJECT_DIR }}/simple_live_app && flutter pub get
 
       - name: Build APK
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter build apk --${{ inputs.build_type }} --split-per-abi
 
       - name: Upload APK
@@ -130,9 +130,9 @@ jobs:
         with:
           name: android-apk
           path: |
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-${{ inputs.build_type }}.apk
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-${{ inputs.build_type }}.apk
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-x86_64-${{ inputs.build_type }}.apk
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-${{ inputs.build_type }}.apk
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-${{ inputs.build_type }}.apk
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/app/outputs/flutter-apk/app-x86_64-${{ inputs.build_type }}.apk
 
   build-ios:
     name: Build iOS
@@ -152,16 +152,16 @@ jobs:
           cache: true
 
       - name: Flutter pub get
-        run: cd ${{ vars.PROJECT_DIR }}/simple_live_app && flutter pub get
+        run: cd ${{ env.PROJECT_DIR }}/simple_live_app && flutter pub get
 
       - name: Build iOS
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter build ios --${{ inputs.build_type }} --no-codesign
 
       - name: Create IPA
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           mkdir -p build/ios/iphoneos/Payload
           cp -R build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
           cd build/ios/iphoneos/
@@ -171,7 +171,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
-          path: ${{ vars.PROJECT_DIR }}/simple_live_app/build/ios/iphoneos/ios_no_sign.ipa
+          path: ${{ env.PROJECT_DIR }}/simple_live_app/build/ios/iphoneos/ios_no_sign.ipa
 
   build-macos:
     name: Build macOS
@@ -194,14 +194,14 @@ jobs:
         run: flutter config --enable-macos-desktop
 
       - name: Flutter pub get
-        run: cd ${{ vars.PROJECT_DIR }}/simple_live_app && flutter pub get
+        run: cd ${{ env.PROJECT_DIR }}/simple_live_app && flutter pub get
 
       - name: Install flutter_distributor
         run: dart pub global activate flutter_distributor
 
       - name: Build macOS
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter_distributor package --platform macos --targets dmg,zip --skip-clean
 
       - name: Upload macOS
@@ -209,8 +209,8 @@ jobs:
         with:
           name: macos
           path: |
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.dmg
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.dmg
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
 
   build-linux:
     name: Build Linux
@@ -236,14 +236,14 @@ jobs:
         run: flutter config --enable-linux-desktop
 
       - name: Flutter pub get
-        run: cd ${{ vars.PROJECT_DIR }}/simple_live_app && flutter pub get
+        run: cd ${{ env.PROJECT_DIR }}/simple_live_app && flutter pub get
 
       - name: Install flutter_distributor
         run: dart pub global activate flutter_distributor
 
       - name: Build Linux
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter_distributor package --platform linux --targets deb,zip --skip-clean
 
       - name: Upload Linux
@@ -251,8 +251,8 @@ jobs:
         with:
           name: linux
           path: |
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.deb
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.deb
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
 
   build-windows:
     name: Build Windows
@@ -275,14 +275,14 @@ jobs:
         run: flutter config --enable-windows-desktop
 
       - name: Flutter pub get
-        run: cd ${{ vars.PROJECT_DIR }}/simple_live_app && flutter pub get
+        run: cd ${{ env.PROJECT_DIR }}/simple_live_app && flutter pub get
 
       - name: Install flutter_distributor
         run: dart pub global activate flutter_distributor
 
       - name: Build Windows
         run: |
-          cd ${{ vars.PROJECT_DIR }}/simple_live_app
+          cd ${{ env.PROJECT_DIR }}/simple_live_app
           flutter_distributor package --platform windows --targets msix,zip --skip-clean
 
       - name: Upload Windows
@@ -290,5 +290,5 @@ jobs:
         with:
           name: windows
           path: |
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.msix
-            ${{ vars.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.msix
+            ${{ env.PROJECT_DIR }}/simple_live_app/build/dist/*/*.zip
